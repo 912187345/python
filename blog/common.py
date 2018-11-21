@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os,json,base64
+import os,json,base64,re
 from HTMLParser import HTMLParser
 
 from django.http import HttpResponse
@@ -112,7 +112,9 @@ class ImgChange(Util):
         if len(imgArr) == 0:
             return self.htmlStr
         for i,imgSrc in enumerate(imgArr):
-            base64 = imgSrc.replace(r'/^data:image\/\w+;base64,/','')
+            if re.match(r'^data:image\/\w+;base64,',imgSrc) == None:
+                continue
+            base64 = re.sub(r'^data:image\/\w+;base64,','',imgSrc)
             imgPath = self.loadImg(base64,i)
             self.htmlStr = self.htmlStr.replace(imgSrc,imgPath)
         return self.htmlStr
@@ -120,11 +122,10 @@ class ImgChange(Util):
     def loadImg(self,img,num):
         baseDir = os.path.dirname(__file__)
         path = os.path.join(baseDir,commonConfig['blogImgPath'], self.fileName) + str(num) + '.jpg'
-        print('load img base64',img)
         f = open(path,"wb")
         f.write(base64.b64decode(img))
         f.close()
-        return path
+        return path.replace(baseDir,'')
     
     def getImg(self,htmlStr):
         img = self.htmlHandle()

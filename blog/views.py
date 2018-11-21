@@ -175,7 +175,8 @@ def getBlogById(request):
     data['collection'] = {}
     data['user'] = userDict
     data['comments'] = []
-
+    data['content'] = data['text']
+    del data['text']
     data['collection'] = {
         'collectionNum':len(blog.collection.all()),
         'collectionBol':True if len(blog.collection.filter(token=token)) > 0 else False
@@ -196,7 +197,7 @@ def getBlogById(request):
             commentDict['replycomments'].append(replyItem)
 
         data['comments'].append(commentDict)
-
+    print('get blog by id',data)
     return serverReturn.success(data=data)
 
 @require_POST
@@ -207,11 +208,22 @@ def addBlog(reuqest):
     title = param['title']
     date = str(int(time.time()))
     newBlogId = date+str(token)
-
-    htmlStr = ImgChange({'htmlStr':content,'fileName':newBlogId}).getHtmlStr()
-    print('addBlog',htmlStr)
-    return serverReturn.fail(errMsg="稍后重试")
-    
+    try:
+        pass
+        htmlStr = ImgChange({'htmlStr':content,'fileName':newBlogId}).getHtmlStr()
+    except:
+        pass
+        return serverReturn.fail(errMsg="请稍后重试")
+    user = User.objects.get(token=token)
+    print('add blog get user a',user)
+    Blog.objects.create(
+        text=htmlStr,
+        usertoken=user,
+        blogid=newBlogId,
+        title=title,
+        updatetime=None
+    )
+    return serverReturn.success(data={'blogId':newBlogId})
 
 @require_POST
 def editBlog(request):

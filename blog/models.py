@@ -15,8 +15,7 @@ from django.utils.translation import ugettext as _
 
 class Blog(models.Model):
     text = models.TextField(_('博客'),max_length=255,blank=True)
-    date = models.DateTimeField(blank=True, null=True)
-
+    date = models.DateTimeField(blank=True, null=True,auto_now_add=True)
     usertoken = models.ForeignKey(
         'User',
         db_column='userToken',
@@ -26,18 +25,10 @@ class Blog(models.Model):
         blank=True,
         null=True,
     )  # Field name made lowercase.
-    
     blogid = models.CharField(db_column='blogId', max_length=255, blank=True, null=True, unique=True)  # Field name made lowercase.
     title = models.CharField(max_length=255, blank=True, null=True)
     updatetime = models.DateTimeField(db_column='updateTime', blank=True, null=True)  # Field name made lowercase.
     id = models.AutoField(max_length=255, blank=True,primary_key=True)
-    # user = models.ForeignKey(
-    #     'User',
-    #     to_field="token",
-    #     on_delete=models.CASCADE,
-    #     related_name='user',
-    #     blank=True,
-    # )
     def __str__(self):
         return self.title
     class Meta:
