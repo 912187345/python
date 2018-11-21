@@ -20,7 +20,7 @@ from django.forms.models import model_to_dict
 from .models import Blog
 from .models import User
 
-from .common import serverReturn,commonConfig,sqlHandle,writeFile,deleteFile,Util
+from .common import serverReturn,commonConfig,sqlHandle,writeFile,deleteFile,Util,ImgChange
 
 # Create your views here.
 @require_POST
@@ -97,6 +97,7 @@ def editUserHead(request):
     
     fileName = request.POST.get('token') + str(int(time.time())) + '.jpg'
     imgPath = os.path.join(baseDir,'static/userHeaderIcon',fileName)
+    print('user header path',imgPath)
     user = User.objects.filter(token=token).values().first()
     
     if user['headImg'] != commonConfig['DEFAULT_BOY_ICON'] or user['headImg'] != commonConfig['DEFAULT_GIRL_ICON']:
@@ -111,7 +112,7 @@ def editUserHead(request):
         User.objects.filter(token=token).update(headImg='/userHeaderIcon/'+fileName)
         try:
             img = Image.open(imgPath)
-            w,h =  img.size
+            w,h =  img.size #返回的是元祖类型，可以按顺序赋值给变量
             dImg = img.resize((w/2,h/2))
             dImg.save(imgPath)
         except:
@@ -128,7 +129,7 @@ def editUserBG(request):
     fileName = token + str(int(time.time())) + '.jpg'
     imgPath = os.path.join(baseDir,'static/bg',fileName)
     user = User.objects.filter(token=token).values().first()
-
+    print('user image path',imgPath)
     if user['background'] != commonConfig['DEFAULT_USER_BACKGROUND']:
         userBackGroundPath = os.getcwd()+'/blog/static' + user['background']
         deleteFile(userBackGroundPath)
@@ -206,7 +207,10 @@ def addBlog(reuqest):
     title = param['title']
     date = str(int(time.time()))
     newBlogId = date+str(token)
-    print('addBlog')
+
+    htmlStr = ImgChange({'htmlStr':content,'fileName':newBlogId}).getHtmlStr()
+    print('addBlog',htmlStr)
+    return serverReturn.fail(errMsg="稍后重试")
     
 
 @require_POST

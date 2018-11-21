@@ -25,7 +25,7 @@ class Blog(models.Model):
         max_length=255,
         blank=True,
         null=True,
-        )  # Field name made lowercase.
+    )  # Field name made lowercase.
     
     blogid = models.CharField(db_column='blogId', max_length=255, blank=True, null=True, unique=True)  # Field name made lowercase.
     title = models.CharField(max_length=255, blank=True, null=True)
