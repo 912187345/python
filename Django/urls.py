@@ -33,5 +33,6 @@ urlpatterns = [
     url('usersetting/set-background',blog_views.editUserBG,name="uploadUserBackGround"),
     url(u'blog/get-blog-by-id',blog_views.getBlogById,name="getBlogById"),
     url(u'blog/get-blog', blog_views.getBlogList, name='getBlogList'),
-    url(u'blog/add-blog', blog_views.addBlog, name='addBlog')
+    url(u'blog/add-blog', blog_views.addBlog, name='addBlog'),
+    url(u'blog/delete-blog', blog_views.deleteBlog,name='deleBlog')
 ]

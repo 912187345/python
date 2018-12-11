@@ -73,18 +73,20 @@ def register(request):
 @require_POST
 def getBlogList(request):
     body = request.jsonBody
+    token = body['token']
     if 'limit' in body:
         limit = body['limit'] or '10'
     if 'offset' in body:
         offset = body['offset'] or '0'
     try:
-        pass
-        data = sqlHandle('select * from get_list LIMIT ' + str(offset) + ',' + str(limit))
-    except:
-        pass
+        if 'myBlog' in body and body['myBlog'] == True:
+            data = sqlHandle('select * from get_list WHERE userToken = "' + str(token) + '" LIMIT '+ str(offset) + ',' + str(limit))
+        else:
+            data = sqlHandle('select * from get_list LIMIT ' + str(offset) + ',' + str(limit))
+    except Exception as error:
+        print('get blog list error',error)
         return serverReturn.fail(errMsg='获取列表失败，请稍后重试')
     else:
-        pass
         return serverReturn.success(data=data)
 
 @require_POST
@@ -224,6 +226,21 @@ def addBlog(reuqest):
         updatetime=None
     )
     return serverReturn.success(data={'blogId':newBlogId})
+
+@require_POST
+@transaction.atomic
+def deleteBlog(request):
+    param = request.jsonBody
+    token = param['token']
+    try:
+        pass
+        blog = Blog.objects.get(usertoken=token).delete()
+        print('delete blog success')
+        return serverReturn.success()
+    except Exception as error:
+        pass
+        print('delete blog error',error)
+        return serverReturn.fail(errMsg="删除失败")
 
 @require_POST
 def editBlog(request):
