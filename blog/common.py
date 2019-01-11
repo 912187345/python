@@ -71,6 +71,28 @@ def writeFile(path,fileObj):
         f.write(fileObj.read())
         f.close()
 
+def deleteOldImg(oldText,newText):
+    print('deleteOldImg')
+    parseImg = HtmlHandle()
+
+    parseImg.feed(oldText or '<div></div>')
+    oldImgSrcArray = parseImg.getImg()
+    
+    parseImg.feed(newText or '<div></div>')
+    newImgSrcArray = parseImg.getImg()
+
+    if len(oldImgSrcArray) == 0:
+        return "didn't delete"
+
+    for imgSrc in oldImgSrcArray:
+        try:
+            newImgSrcArray.index(imgSrc)
+        except:
+            pass
+        else:
+            deleteFile(imgSrc)
+        
+
 class HtmlHandle(HTMLParser):
     def __init__(self):
         HTMLParser.__init__(self)

@@ -19,8 +19,11 @@ from django.forms.models import model_to_dict
 
 from .models import Blog
 from .models import User
+from .models import Collection
+from .models import Comments
+from .models import Replycomments
 
-from .common import serverReturn,commonConfig,sqlHandle,writeFile,deleteFile,Util,ImgChange
+from .common import serverReturn,commonConfig,sqlHandle,writeFile,deleteFile,Util,ImgChange,deleteOldImg
 
 # Create your views here.
 @require_POST
@@ -243,25 +246,87 @@ def deleteBlog(request):
         return serverReturn.fail(errMsg="删除失败")
 
 @require_POST
+@transaction.atomic
 def editBlog(request):
     print('editeBlog')
+    param = request.jsonBody
+    blogId = param['blogId']
+    userToken = param['token']
+    text = param['text']
+    title = param['title']
+
+    blog = Blog.objects.get(blogid=blogId)
+    blogDict = model_to_dict(blog)
+    
+    deleteOldImg(blog['text'],text)
+    newText = ImgChange({'htmlStr':text,'fileName':str(int(time.time()))+blogId}).getHtmlStr()
+    blog.update(text=newText,title=title,updateTime = str(int(time.time())) )
+    return serverReturn.success(data = model_to_dict(Blog.objects.get(blogid=blogId)) )
 
 @require_POST
 def collection(request):
     print('collec')
+    param = request.jsonBody
+    blogId = param['blogId']
+    userToken = param['token']
+    cType = param['type']
+    if cType == 'add':
+        Collection.objects.create(
+            blogid=blogId,
+            token=userToken
+        )
+        return serverReturn.success()
+
+    if cType == 'cancel':
+        collectionItem = Collection.objects.get(blogid=blogId,token=userToken).delete()
+        return serverReturn.success()
 
 @require_POST
 def getCollection(request):
     print('getCollection')
+    param = request.jsonBody
+    userToken = param['token']
+    limit = param['limit'] or 10
+    offset = param['offset'] or 0
+    data = sqlHandle('select * from get_collection where userToken="'+str(userToken)+'" LIMIT '+str(offset)+','+str(limit))
+    return serverReturn.success(data=data)
 
 @require_POST
 def blogComments(request):
     print('blogComments')
+    param = request.jsonBody
+    userToken = param['token']
+    text = param['text']
+    commentsName = param['commentsName']
+    blogId = param['blogId']
+    Comments.objects.create(
+        blogId = blogId,
+        commentscontent = text
+    )
+    return serverReturn.success(data="success")
 
 @require_POST
 def deleteComments(request):
     print('deleteComments')
+    param = request.jsonBody
+    commentsId = param['commentsId']
+    Comments.objects.get(id=commentsId).delete()
+    return serverReturn.success()
 
 @require_POST
 def replyComments(request):
     print('replyComments')
+    param = request.jsonBody
+    commentsId = param['commentsId']
+    toToken = param['toToken']
+    fromToken = param['fromToken']
+    replyText = param['text']
+    blogId = param['blogId']
+    Replycomments.objects.create(
+        blogid=blogId,
+        totoken = toToken,
+        fromtoken = fromToken,
+        replytext = replyText,
+        commentsid = commentsId
+    )
+    return serverReturn.success()

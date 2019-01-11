@@ -84,7 +84,7 @@ class Comments(models.Model):
 
 class Replycomments(models.Model):
     replytext = models.CharField(db_column='replyText', max_length=255, blank=True, null=True)  # Field name made lowercase.
-    replydate = models.DateTimeField(db_column='replyDate', blank=True, null=True)  # Field name made lowercase.
+    replydate = models.DateTimeField(db_column='replyDate', blank=True, null=True,auto_now_add=True)  # Field name made lowercase.
     commentsid = models.ForeignKey(
         'Comments',
         to_field='id',
